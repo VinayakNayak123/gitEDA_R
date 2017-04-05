@@ -1,0 +1,410 @@
+
+TITLE  Exploratory data Analysis to determine the quality of red wine.
+Author - VINAYAK NAYAK
+========================================================
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using
+# in your analysis in this code chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk.
+# This prevents the code from displaying in the knitted HTML output.
+# You should set echo=FALSE for all code chunks in your file.
+
+library(ggplot2)
+library(gridExtra)
+library('bitops')
+library('RCurl')
+library(GGally)
+library(scales)
+library(memisc)
+```
+
+```{r echo=FALSE}
+# Load the Data
+setwd('C:/Users/vnayak/Documents/vnayak_data_bkp/Udacity/DataAnalyst_Nano/Data_Analysis_R/FINAL_PROJECT/FINAL_PROJ_SUBMISSION/github_R')
+
+getwd()
+#list.files()
+redwinedf<-read.csv('wineQualityReds.csv')
+names(redwinedf)
+str(redwinedf)
+summary(redwinedf)
+```
+
+Our data set contains 1599 observations of 13 variables.
+
+
+# Univariate Plots Section
+```{r echo=FALSE}
+# We will analyze the quality variable.
+ggplot(aes(x=quality),data = redwinedf)+
+  geom_histogram(binwidth = 0.5)+
+  scale_x_continuous(breaks = seq(3,8,0.5))
+
+```
+
+```{r Analysis of variable quality}
+```
+
+```{r echo=FALSE}
+summary(redwinedf$alcohol)
+ggplot(aes(x=alcohol),data = redwinedf)+
+  geom_histogram(binwidth = 0.1)+
+  scale_x_continuous(breaks = seq(8.40,14.90,0.5))
+```
+ In the above graph we see that the data is skewed to the right. So we will apply log #transformation to the x axis. We see bi modal distribution in our graph.
+
+```{r echo=FALSE}
+ggplot(aes(x=alcohol),data = redwinedf)+
+  geom_histogram(binwidth = 0.01)+
+  scale_x_log10()
+```
+
+```{r echo=FALSE }
+ggplot(aes(x=quality),data = subset(redwinedf,alcohol>=9.5))+
+  geom_histogram(binwidth = 0.5)
+```
+
+
+
+```{r echo=FALSE}
+#Analyze the sulphate variable
+summary(redwinedf$sulphates)
+ggplot(aes(x=sulphates),data = redwinedf)+
+  geom_histogram(binwidth = 0.05)+
+  scale_x_continuous(breaks = seq(0.3,2,0.1))
+
+
+
+```
+
+```{r echo=FALSE}
+# Analyzed the distribution of the variable. Its normally distributed. 
+ggplot(aes(x=sulphates),data = redwinedf)+
+  geom_histogram(binwidth = 0.01)+
+  scale_x_log10(breaks=seq(0.3,1,0.1))
+
+```
+
+
+```{r echo=FALSE}
+ggplot(aes(x=pH),data = redwinedf)+
+  geom_histogram(binwidth = 0.01)+
+  scale_x_continuous(breaks = seq(2.740,4.010,0.1))
+```
+
+
+
+
+```{r echo=FALSE}
+ggplot(aes(x=density),data = redwinedf)+
+  geom_histogram(binwidth = 0.001)+
+  scale_x_continuous(breaks = seq(0.990,1.0037,0.001))
+```
+
+
+
+```{r echo=FALSE}
+summary(redwinedf$residual.sugar)
+ggplot(aes(x=residual.sugar),data = redwinedf)+
+  geom_histogram(binwidth = 0.5)+
+  scale_x_continuous(breaks = seq(0.900,15,1))
+```
+
+The graph above shows it is skewed to right. We will apply log transformation.
+```{r echo=FALSE}
+ggplot(aes(x=residual.sugar),data = redwinedf)+
+  geom_histogram(binwidth = 0.1)+
+  scale_x_log10(breaks=seq(1,10,1))
+```
+
+
+```{r echo=FALSE}
+ggplot(aes(x=residual.sugar),data = subset(redwinedf,redwinedf$residual.sugar <2.6))+
+  geom_histogram(binwidth = 0.08)+
+  scale_x_continuous(breaks = seq(0.90,2.6,0.1))
+```
+
+I will create a new variable called quality.factor which will be helpful in plotting box plots . Since quality it is a continous variable we will make the new variable as factor var. 
+```{r echo=FALSE}
+redwinedf$quality.factor<-cut(redwinedf$quality,c(2,4,5,6,7,8,9))
+```
+
+
+
+
+
+# Univariate Analysis
+
+Structure of the dataset.
+Ans:  There are 1599 observation with 13 variables (x,fixed.acidity,volatile.acidity,citric.acid,residual.sugar,chlorides,free.sulphur.dioxide,density,pH,sulphates,alcohol,quality).X and quality are int variable and rest of the variables are num.
+
+#Other observations:
+quality has minimum value of 3. Median is 6. Mean is 5.635, MAx is 8.
+The count of density  is more with density value from 0.996 to 0.997
+residual sugar has median value as 2.200,mean is 2.539.  But the max value is 15.500 which seems to be an outlier in the data.
+fixed.acidity has median value as 7.90,mean as 8.32, but the max value os 15.90 which is an outlier.
+
+
+
+#Main feature(s) of interest in dataset
+The  main feature of interest in your dataset is  to observe the quality of the red wine.Also how other factors like alcohol,pH,residual sugar affect the quality of the red wine.
+
+
+#Other features in the dataset I think will help support my investigation into the feature(s) of interest?
+Fixed.acidity,volatile.acidity and citric.acid are other features that may help in #investigation
+
+#Create any new variables from existing variables in the dataset
+New variable created is ::  redwinedf$quality.factor
+
+#Unusual distributions.Operation performed to change distribution.
+Alcohol was skewed to the right. So I applied lox_x transformation and observed a bimodal distribution.
+residual sugar was skewed to the right. After applying log_x transformation it changed into a normal distribution.
+
+
+
+# Bivariate Plots Section
+```{r echo=FALSE}
+p1<-ggplot(aes(x=quality,y=alcohol),data = redwinedf)+
+  geom_point()+
+  geom_smooth(method = 'lm',color='red')
+```
+
+```{r correlation between quality and alcohol,echo=FALSE}
+cor.test(redwinedf$quality,redwinedf$alcohol)
+
+```
+
+```{r scatter plot for quality and pH,echo=FALSE}
+p2<-ggplot(aes(x=quality,y=pH),data = redwinedf)+
+  geom_point()+
+  geom_smooth(method = 'lm',color='red')
+```
+
+```{r correlation between quality and pH,echo=FALSE}
+cor.test(redwinedf$quality,redwinedf$pH)
+```
+
+```{r scatterplot for quality vs residual sugar,echo=FALSE}
+p3<-ggplot(aes(x=quality,y=residual.sugar),data = redwinedf)+
+  geom_point()+
+  geom_smooth(method = 'lm',color='red')
+```
+
+```{r correlation,echo=FALSE}
+cor.test(redwinedf$quality,redwinedf$residual.sugar)
+```
+
+```{r fixed.acidity and quality,echo=FALSE}
+p4<-ggplot(aes(x=quality,y=fixed.acidity),data = redwinedf)+
+  geom_point()+
+  geom_smooth(method = 'lm',color='red')
+```
+
+```{r correlation between quality and fixed.acidity}
+cor.test(redwinedf$quality,redwinedf$fixed.acidity)
+```
+
+```{r quality and volatile.acidity}
+p5<-ggplot(aes(x=quality,y=volatile.acidity),data = redwinedf)+
+  geom_point()+
+  geom_smooth(method = 'lm',color='red')
+```
+
+```{r correlation between quality and volatile.acidity}
+cor.test(redwinedf$quality,redwinedf$volatile.acidity)
+cor.test(redwinedf$quality,redwinedf$citric.acid)
+```
+
+```{r quality and citric acid}
+p6<-ggplot(aes(x=quality,y=citric.acid),data = redwinedf)+
+  geom_point()+
+  geom_smooth(method = 'lm',color='red')
+```
+
+
+```{r quality and chlorides}
+p7<-ggplot(aes(x=quality,y=chlorides),data = redwinedf)+
+  geom_point()+
+  geom_smooth(method = 'lm',color='red')
+```
+
+```{r quality and free.sulphur.dioxide}
+p8<-ggplot(aes(x=quality,y=free.sulfur.dioxide),data = redwinedf)+
+  geom_point()+
+  geom_smooth(method = 'lm',color='red')
+```
+
+```{r quality and total sulphur dioxide}
+p9<-ggplot(aes(x=quality,y=total.sulfur.dioxide),data = redwinedf)+
+  geom_point()+
+  geom_smooth(method = 'lm',color='red')
+```
+
+```{r quality and sulphates}
+p10<-ggplot(aes(x=quality,y=sulphates),data = redwinedf)+
+  geom_point()+
+  geom_smooth(method = 'lm',color='red')
+```
+
+```{r quality and density}
+p11<-ggplot(aes(x=quality,y=density),data = redwinedf)+
+  geom_point()+
+  geom_smooth(method = 'lm',color='red')
+```
+
+
+```{r}
+grid.arrange(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,ncol=3)
+```
+
+
+```{r relationship between fixed.acidity and volatile.acidity}
+ggplot(aes(x=fixed.acidity,y=volatile.acidity),data = redwinedf)+
+  geom_point()+
+  geom_smooth(method = 'lm',color='red')
+
+cor.test(redwinedf$fixed.acidity,redwinedf$volatile.acidity)
+```
+
+```{r relationship between free.sulphur.dioxide and total.sulfur.dioxide}
+ggplot(aes(x=free.sulfur.dioxide,y=total.sulfur.dioxide),data = redwinedf)+
+  geom_point(alpha=1/10,position = position_jitter(h=0))+
+  geom_smooth(method = 'lm',color='red')
+
+cor.test(redwinedf$free.sulfur.dioxide,redwinedf$total.sulfur.dioxide)
+```
+ We see that there is strong relationship between free.sulphur.dioxide and #total.sulphur.dioxide.
+
+
+```{r box plot between quality.factor and alcohol}
+ggplot(aes(x=quality.factor,y=alcohol),data = redwinedf)+
+  geom_boxplot()
+
+```
+
+```{r box plot between quality.factor and citric.acid}
+ggplot(aes(x=quality.factor,y=citric.acid),data = redwinedf)+
+  geom_boxplot()
+```
+
+```{r box plot between quality.factor and sulphates}
+ggplot(aes(x=quality.factor,y=sulphates),data = redwinedf)+
+  geom_boxplot()
+```
+
+
+
+
+# Bivariate Analysis
+
+
+ Alcohol,citric acid and suplhates are strongly co related to quality. Fixed acidity is slightly co related to quality. It can be seen from the above graph.
+
+
+
+
+#Interesting relationships between the other features (not the main feature(s) of interest)?
+ We see that there is strong relationship between free.sulphur.dioxide and total.sulphur.dioxide.
+
+# Strongest relationship.
+Strongest correlation between free.sulfur.dioxide and total.sulfur.dioxide.
+Second co relation is beween alcohol and quality. 
+
+
+
+# Multivariate Plots Section
+
+```{r echo=FALSE, Multivariate_Plots}
+
+```
+
+```{r Scatterplot with quality and alcohol using color}
+ggplot(aes(x=quality,y=alcohol,color=quality.factor),data = redwinedf)+
+  geom_point(alpha=1/5,position = position_jitter(h=0))
+```
+It is clear from the above graph that the quality is determined by the  content of alcohol 
+
+```{r}
+ggplot(aes(x=quality,y=citric.acid,color=quality.factor),data = redwinedf)+
+  geom_point(alpha=1/5,position = position_jitter(h=0))
+```
+
+```{r}
+
+ggplot(aes(x=quality,y=sulphates,color=quality.factor),data = redwinedf)+
+  geom_point(alpha=1/2,position = position_jitter(h=0))+
+  ylim(0,quantile(redwinedf$sulphates,0.99))+
+  scale_color_brewer(type = 'qual')
+
+```
+ Alcohol, citric acid and Sulphate are strongly related to quality in a linear way.As the value of the three variables increases the quality of the alcohol increases.
+
+
+```{r}
+ggplot(aes(x=quality,y=total.sulfur.dioxide,color=quality.factor),data = redwinedf)+
+  geom_point(alpha=1/5,position = position_jitter(h=0))
+```
+
+```{r quality and volatile acidity, non linear relationship}
+
+ggplot(aes(x=quality,y=volatile.acidity,color=quality.factor),data = redwinedf)+
+  geom_point(alpha=1/5,position = position_jitter(h=0))+
+  scale_color_brewer(type = 'qual')
+```
+ From the above observation we see that quality of the alcohol increases with the decrease in volatile.acidity.So there is non linear relationship.
+
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
+#Relationship between quality and alcohol shows strong relationship between the two variables.
+
+alcohol - Strong linear
+pH - Slight Non linear
+residual sugar - flat
+fixed.acidity - slight linear
+volatile.acidity - Strong non linear
+citric.acid - Strong linear
+chlorides - Slight non linear (close to flat)
+free.sulfur.dioxide - Slight non linear (close to flat)
+total sulphur dioxide - Non linear
+Sulphates - Strong linear
+density - Non linear
+
+
+### Were there any interesting or surprising interactions between features?
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the strengths and limitations of your model.
+
+------
+
+# Final Plots and Summary
+
+### Plot One
+```{r echo=FALSE, Plot_One}
+
+```
+
+### Description One
+
+
+### Plot Two
+```{r echo=FALSE, Plot_Two}
+
+```
+
+### Description Two
+
+
+### Plot Three
+```{r echo=FALSE, Plot_Three}
+
+```
+
+### Description Three
+
+------
+
+# Reflection
